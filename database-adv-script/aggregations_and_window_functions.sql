@@ -1,30 +1,19 @@
--- Aggregation with COUNT
--- Find total number of bookings made by each user
+-- Write a query to find the total number of bookings made by each user, using the COUNT function and GROUP BY clause.
+SELECT
+  u.user_id,
+  u.email,
+  COUNT(b.booking_id) as total_bookings
+FROM User u JOIN Booking b ON  u.user_id = b.user_id
+GROUP BY u.user_id, u.email
 
-SELECT 
-  User.user_id,
-  User.first_name,
-  User.email,
-  COUNT(Booking.booking_id) AS total_bookings
-FROM User
-JOIN Booking ON User.user_id = Booking.user_id
-GROUP BY User.user_id, User.first_name, User.email
-ORDER BY total_bookings DESC;
 
--- Window Function: ROW_NUMBER
--- Rank properties by the total number of bookings
+-- Use a window function (ROW_NUMBER, RANK) to rank properties based on the total number of bookings they have received.
 
-SELECT 
-  property_id,
-  name,
-  booking_count,
-  ROW_NUMBER() OVER (ORDER BY booking_count DESC) AS row_num
-FROM (
-    SELECT 
-      Property.property_id,
-      Property.name,
-      COUNT(Booking.booking_id) AS booking_count
-    FROM Property
-    LEFT JOIN Booking ON Property.property_id = Booking.property_id
-    GROUP BY Property.property_id, Property.name
-) AS ranked_properties;
+SELECT
+  u.user_id,
+  u.email,
+  COUNT(b.booking_id) as total_booking,
+  RANK() OVER(ORDER BY COUNT(booking_id) DESC) as user_rank_booking,
+  ROW_NUMBER() OVER(ORDER BY COUNT(booking_id)) as user_row_number
+  FROM User u JOIN Booking b ON u.user_id = b.user_id
+  GROUP BY u.user_id, u.email;
